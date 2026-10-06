@@ -1,12 +1,41 @@
 /* Practice Hub — timer + log, all data in localStorage */
 
+// Line icons, drawn with the text color (see .icon in styles.css).
+// Each entry is the inside of a 24x24 <svg>.
+const ICONS = {
+  violin:     '<g transform="rotate(45 12 12)"><path d="M12-2v20.5M10.3-.5h3.4M10.3 1.5h3.4M10.2 18.5h3.6"/><path d="M12 7c-2.6 0-4.2 1.6-4.2 3.6 0 1.2.6 2 1.4 2.6-.3.5-.3 1.1 0 1.6-1.3.8-2.4 2.3-2.4 4.4 0 2.9 2.3 4.8 5.2 4.8s5.2-1.9 5.2-4.8c0-2.1-1.1-3.6-2.4-4.4.3-.5.3-1.1 0-1.6.8-.6 1.4-1.4 1.4-2.6C16.2 8.6 14.6 7 12 7z"/></g>',
+  book:       '<path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2z"/><path d="M22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z"/>',
+  pencil:     '<path d="M17 3l4 4L8 20l-5 1 1-5z"/><path d="M14 6l4 4"/>',
+  keyboard:   '<rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/>',
+  volleyball: '<circle cx="12" cy="12" r="9"/><path d="M12 12c0-4-2.5-6.5-6-7M12 12c3.5 2 7 1.5 8.7-1M12 12c-3.5 2-4.5 5.5-3 8.5"/>',
+  feather:    '<path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"/><path d="M16 8 2 22M17.5 15H9"/>',
+  home:       '<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/>',
+  today:      '<circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/>',
+  flame:      '<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>',
+  clock:      '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  check:      '<path d="m5 12 5 5 9-10"/>',
+  dice:       '<rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 8h.01M16 8h.01M12 12h.01M8 16h.01M16 16h.01"/>',
+  shuffle:    '<path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/>',
+  sparkle:    '<path d="M12 3l2.2 6.8L21 12l-6.8 2.2L12 21l-2.2-6.8L3 12l6.8-2.2z"/>',
+  star:       '<path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9z"/>',
+  user:       '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+};
+
+function icon(name) {
+  return '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true">' + ICONS[name] + '</svg>';
+}
+
+document.querySelectorAll("[data-icon]").forEach(function (el) {
+  el.innerHTML = icon(el.dataset.icon);
+});
+
 const ACTIVITIES = [
-  { id: "violin",     name: "Violin",     emoji: "\uD83C\uDFBB", minutes: 20, accent: "#7C5CFF" },
-  { id: "reading",    name: "Reading",    emoji: "\uD83D\uDCDA", minutes: 20, accent: "#2E9BFF" },
-  { id: "homework",   name: "Homework",   emoji: "\u270F\uFE0F", minutes: 30, accent: "#FF9F1C" },
-  { id: "typing",     name: "Typing",     emoji: "\u2328\uFE0F", minutes: 15, accent: "#00C2A8" },
-  { id: "volleyball", name: "Volleyball", emoji: "\uD83C\uDFD0", minutes: 30, accent: "#FF5C7A" },
-  { id: "writing",    name: "Writing",    emoji: "\u270D\uFE0F", minutes: 15, accent: "#B565FF" },
+  { id: "violin",     name: "Violin",     icon: "violin", minutes: 20 },
+  { id: "reading",    name: "Reading",    icon: "book", minutes: 20 },
+  { id: "homework",   name: "Homework",   icon: "pencil", minutes: 30 },
+  { id: "typing",     name: "Typing",     icon: "keyboard", minutes: 15 },
+  { id: "volleyball", name: "Volleyball", icon: "volleyball", minutes: 30 },
+  { id: "writing",    name: "Writing",    icon: "feather", minutes: 15 },
 ];
 
 const PROMPTS = [
@@ -96,10 +125,10 @@ function esc(s) {
 
 /* ---------- home ---------- */
 function renderHome() {
-  let html = '<h2 class="view-title">What are we practicing? \uD83C\uDFB5</h2><div class="grid">';
+  let html = '<h2 class="view-title">What are we practicing?</h2><div class="grid">';
   ACTIVITIES.forEach(function (a) {
-    html += '<button class="card" style="--accent:' + a.accent + '" data-activity="' + a.id + '">' +
-      '<span class="card-emoji">' + a.emoji + '</span>' +
+    html += '<button class="card" data-activity="' + a.id + '">' +
+      '<span class="card-emoji">' + icon(a.icon) + '</span>' +
       '<span class="card-name">' + esc(a.name) + '</span>' +
       '<span class="card-mins">' + a.minutes + ' min</span></button>';
   });
@@ -145,9 +174,9 @@ function renderTimer() {
   if (!t) { showView("home"); return; }
   const a = t.activity;
 
-  let html = '<div class="timer-wrap" style="--accent:' + a.accent + '">' +
+  let html = '<div class="timer-wrap">' +
     '<button class="timer-back" id="timer-back">\u2190 All activities</button>' +
-    '<div class="timer-emoji">' + a.emoji + '</div>' +
+    '<div class="timer-emoji">' + icon(a.icon) + '</div>' +
     '<div class="timer-name">' + esc(a.name) + ' \u00B7 ' + a.minutes + ' min</div>' +
     '<div class="timer-display" id="timer-display">' + fmt(t.remainingSec) + '</div>' +
     '<div class="timer-btns">' +
@@ -158,13 +187,13 @@ function renderTimer() {
     '<div class="timer-btns"><button class="btn btn-done" id="timer-done">Done \u2713</button></div>';
 
   if (a.id === "writing") {
-    html += '<div class="writing-panel"><h3>\u270D\uFE0F Writing</h3>' +
+    html += '<div class="writing-panel"><h3>' + icon("feather") + ' Writing</h3>' +
       '<div class="mode-tabs">' +
-      '<button class="mode-tab active" id="mode-prompts">\uD83C\uDFB2 Prompts</button>' +
-      '<button class="mode-tab" id="mode-stories">\uD83D\uDCDA Stories</button></div>' +
+      '<button class="mode-tab active" id="mode-prompts">' + icon("dice") + ' Prompts</button>' +
+      '<button class="mode-tab" id="mode-stories">' + icon("book") + ' Stories</button></div>' +
       '<div id="prompts-mode">' +
       '<div class="prompt-box" id="prompt-box">Tap \u201CNew prompt\u201D for a story idea!</div>' +
-      '<button class="prompt-btn" id="prompt-btn">\uD83C\uDFB2 New prompt</button>' +
+      '<button class="prompt-btn" id="prompt-btn">' + icon("dice") + ' New prompt</button>' +
       '<textarea id="story" placeholder="Write your story here\u2026"></textarea>' +
       '<div class="word-count"><span id="word-count">0</span> words</div></div>' +
       '<div id="stories-mode" class="hidden"></div></div>';
@@ -289,11 +318,11 @@ function finishEarly() {
 }
 
 function celebrate(activity) {
-  const emojis = ["\uD83C\uDF89", "\u2B50", "\u{1F31F}", "\uD83C\uDF8A", "\u2728", "\uD83D\uDCAB"];
+  const shapes = [icon("star"), icon("sparkle")];
   for (let i = 0; i < 45; i++) {
     const s = document.createElement("span");
     s.className = "confetti";
-    s.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+    s.innerHTML = shapes[Math.floor(Math.random() * shapes.length)];
     s.style.left = Math.random() * 100 + "vw";
     s.style.fontSize = 18 + Math.random() * 26 + "px";
     s.style.animationDuration = 2 + Math.random() * 1.8 + "s";
@@ -302,9 +331,9 @@ function celebrate(activity) {
   }
   overlayRoot.innerHTML =
     '<div class="overlay"><div class="overlay-card">' +
-    '<div class="overlay-emoji">' + activity.emoji + ' \uD83C\uDF89</div>' +
+    '<div class="overlay-emoji">' + icon(activity.icon) + '</div>' +
     '<h2>Amazing!</h2>' +
-    '<p>' + esc(activity.name) + ' logged. Keep that streak going! \uD83D\uDD25</p>' +
+    '<p>' + esc(activity.name) + ' logged. Keep that streak going!</p>' +
     '<button class="btn btn-done" id="overlay-done">Done</button>' +
     '</div></div>';
   document.getElementById("overlay-done").addEventListener("click", function () {
@@ -324,11 +353,11 @@ function renderToday() {
   let html = '<h2 class="view-title">Today \u2014 ' + esc(prettyDate(new Date())) + '</h2>';
   ACTIVITIES.forEach(function (a) {
     const done = !!doneIds[a.id];
-    html += '<div class="todo-row' + (done ? " done" : "") + '" style="--accent:' + a.accent + '">' +
-      '<span class="todo-emoji">' + a.emoji + '</span>' +
+    html += '<div class="todo-row' + (done ? " done" : "") + '">' +
+      '<span class="todo-emoji">' + icon(a.icon) + '</span>' +
       '<div class="todo-info"><div class="todo-name">' + esc(a.name) + '</div>' +
       '<div class="todo-sub">' + a.minutes + ' min' + (done ? " \u00B7 done!" : "") + '</div></div>' +
-      '<span class="todo-check">' + (done ? "\u2705" : "\u2B1C") + '</span></div>';
+      '<span class="todo-check">' + (done ? icon("check") : "") + '</span></div>';
   });
   viewEl.innerHTML = html;
 }
@@ -350,8 +379,8 @@ function streakInfo() {
 
 function renderStreak() {
   const info = streakInfo();
-  let html = '<h2 class="view-title">Streak \uD83D\uDD25</h2>' +
-    '<div class="streak-hero"><div class="streak-num">\uD83D\uDD25 ' + info.streak + '</div>' +
+  let html = '<h2 class="view-title">Streak</h2>' +
+    '<div class="streak-hero"><div class="streak-num">' + icon("flame") + ' ' + info.streak + '</div>' +
     '<div class="streak-label">' + (info.streak === 1 ? "day" : "days") +
     ' in a row with at least one practice!</div></div>' +
     '<h2 class="view-title">Last 14 days</h2><div class="dots">';
@@ -361,7 +390,7 @@ function renderStreak() {
     d.setDate(d.getDate() - i);
     const hit = !!info.days[localDay(d)];
     const label = d.toLocaleDateString("en-US", { weekday: "narrow" });
-    html += '<div><div class="dot' + (hit ? " hit" : "") + '">\u2B50</div>' +
+    html += '<div><div class="dot' + (hit ? " hit" : "") + '">' + icon("star") + '</div>' +
       '<div class="dot-day">' + label + '</div></div>';
   }
   html += "</div>";
@@ -373,7 +402,7 @@ function renderHistory() {
   const log = loadLog().slice().sort(function (x, y) { return y.ts - x.ts; });
   if (!log.length) {
     viewEl.innerHTML = '<h2 class="view-title">History</h2>' +
-      '<div class="empty">No practices logged yet.<br>Tap an activity on Home to start! \uD83C\uDFB5</div>';
+      '<div class="empty">No practices logged yet.<br>Tap an activity on Home to start!</div>';
     return;
   }
   const groups = {};
@@ -387,8 +416,8 @@ function renderHistory() {
     const d = new Date(date + "T12:00:00");
     html += '<div class="hist-day">' + esc(prettyDate(d)) + '</div>';
     groups[date].forEach(function (e) {
-      const a = activityById(e.activityId) || { emoji: "\u2705", name: e.activityName };
-      html += '<div class="hist-row"><span class="hist-emoji">' + a.emoji + '</span>' +
+      const a = activityById(e.activityId) || { icon: "check", name: e.activityName };
+      html += '<div class="hist-row"><span class="hist-emoji">' + icon(a.icon) + '</span>' +
         '<span>' + esc(e.activityName) + ' \u00B7 ' + e.minutes + ' min</span>' +
         (e.words ? '<span class="hist-words">' + e.words + ' words</span>' : '') + '</div>';
     });
@@ -497,19 +526,19 @@ function renderStoriesMode() {
 function storiesShelfHtml() {
   const last = newestStory();
   let html = '<div class="story-choices">' +
-    '<button class="story-choice" id="new-story-btn"><span class="choice-emoji">\u2728</span>' +
+    '<button class="story-choice" id="new-story-btn"><span class="choice-emoji">' + icon("sparkle") + '</span>' +
     '<span class="choice-label">New story</span>' +
     '<span class="choice-sub">Pick a starter</span></button>';
 
   if (last) {
     const touchedYesterday = last.updatedAt < new Date(new Date().setHours(0, 0, 0, 0)).getTime();
-    html += '<button class="story-choice continue" id="continue-story-btn"><span class="choice-emoji">\uD83D\uDCDA</span>' +
+    html += '<button class="story-choice continue" id="continue-story-btn"><span class="choice-emoji">' + icon("book") + '</span>' +
       '<span class="choice-label">' + (touchedYesterday ? "Continue yesterday\u2019s story" : "Continue your story") + '</span>' +
       '<span class="choice-sub">' + esc(storyTitle(last)) + '</span></button>';
   }
   html += '</div>';
 
-  html += '<button class="prompt-btn dad-btn" id="dad-story-btn">\uD83D\uDC68 Dad starts one</button>';
+  html += '<button class="prompt-btn dad-btn" id="dad-story-btn">' + icon("user") + ' Dad starts one</button>';
 
   const rest = loadStories().slice().sort(function (a, b) { return b.updatedAt - a.updatedAt; });
   const older = last ? rest.filter(function (s) { return s.id !== last.id; }) : rest;
@@ -518,13 +547,13 @@ function storiesShelfHtml() {
     older.forEach(function (s) {
       const n = s.chapters.length;
       html += '<button class="shelf-row" data-story="' + s.id + '">' +
-        '<span class="shelf-emoji">\uD83D\uDCDA</span>' +
+        '<span class="shelf-emoji">' + icon("book") + '</span>' +
         '<span class="shelf-info"><span class="shelf-snippet">' + esc(storyTitle(s)) + '</span>' +
         '<span class="shelf-meta">' + n + (n === 1 ? " chapter" : " chapters") + '</span></span>' +
         '<span class="shelf-go">\u203A</span></button>';
     });
   } else if (!last) {
-    html += '<div class="empty">No stories yet.<br>Start a new one above! \uD83D\uDCDA</div>';
+    html += '<div class="empty">No stories yet.<br>Start a new one above!</div>';
   }
   return html;
 }
@@ -542,11 +571,11 @@ function pickStarters() {
 
 function starterPickHtml() {
   let html = '<button class="timer-back" id="story-back">\u2190 All stories</button>';
-  html += '<h3 class="pick-title">Pick a story starter \uD83D\uDCDA</h3><div class="starter-cards">';
+  html += '<h3 class="pick-title">Pick a story starter</h3><div class="starter-cards">';
   pickStarters().forEach(function (i) {
     html += '<button class="starter-card" data-starter-idx="' + i + '">' + esc(STORY_STARTERS[i]) + '</button>';
   });
-  html += '</div><button class="prompt-btn" id="shuffle-starters">\uD83D\uDD00 Shuffle</button>';
+  html += '</div><button class="prompt-btn" id="shuffle-starters">' + icon("shuffle") + ' Shuffle</button>';
   return html;
 }
 
@@ -554,10 +583,10 @@ function starterPickHtml() {
 
 function dadStartHtml() {
   return '<button class="timer-back" id="story-back">\u2190 All stories</button>' +
-    '<h3 class="pick-title">\uD83D\uDC68 Dad writes the opening</h3>' +
+    '<h3 class="pick-title">' + icon("user") + ' Dad writes the opening</h3>' +
     '<p class="dad-hint">Write 2\u20133 sentences to kick off the story. Kate writes Chapter 1 next.</p>' +
     '<textarea id="dad-opening" placeholder="It started on an ordinary Tuesday\u2026"></textarea>' +
-    '<button class="btn btn-start" id="dad-start-go">Start the story \u2728</button>';
+    '<button class="btn btn-start" id="dad-start-go">Start the story</button>';
 }
 
 /* ----- write a chapter ----- */
@@ -569,15 +598,15 @@ function storyWriteHtml(story) {
     esc(story.starter) + '</p></div>';
 
   story.chapters.forEach(function (c, i) {
-    const who = c.author === "Dad" ? "\uD83D\uDC68 Dad" : "\uD83C\uDF1F Kate";
+    const who = c.author === "Dad" ? icon("user") + " Dad" : icon("star") + " Kate";
     html += '<div class="chapter"><span class="chapter-author ' +
       (c.author === "Dad" ? "dad" : "kate") + '">' + who + ' \u00B7 Ch. ' + (i + 1) +
       '</span><p>' + esc(c.text) + '</p></div>';
   });
 
   html += '<div class="author-toggle"><span>Writing as:</span>' +
-    '<button class="author-btn' + (t.author !== "Dad" ? " active" : "") + '" data-author="Kate">\uD83C\uDF1F Kate</button>' +
-    '<button class="author-btn' + (t.author === "Dad" ? " active" : "") + '" data-author="Dad">\uD83D\uDC68 Dad</button></div>';
+    '<button class="author-btn' + (t.author !== "Dad" ? " active" : "") + '" data-author="Kate">' + icon("star") + ' Kate</button>' +
+    '<button class="author-btn' + (t.author === "Dad" ? " active" : "") + '" data-author="Dad">' + icon("user") + ' Dad</button></div>';
 
   const draft = loadDraft(story.id);
   html += '<textarea id="chapter-text" placeholder="What happens next? Write Chapter ' +
@@ -592,16 +621,16 @@ function storyWriteHtml(story) {
 
 function storyReadHtml(story) {
   let html = '<button class="timer-back" id="story-back">\u2190 All stories</button>';
-  html += '<div class="read-story"><h3>\uD83D\uDCDA ' + esc(storyTitle(story)) + '</h3>';
+  html += '<div class="read-story"><h3>' + esc(storyTitle(story)) + '</h3>';
   html += '<p class="read-starter">' + esc(story.starter) + '</p>';
   story.chapters.forEach(function (c, i) {
     html += '<p class="read-chapter-head"><strong>Chapter ' + (i + 1) + '</strong> ' +
       '<span class="chapter-author ' + (c.author === "Dad" ? "dad" : "kate") + '">' +
-      (c.author === "Dad" ? "\uD83D\uDC68 Dad" : "\uD83C\uDF1F Kate") + '</span></p>';
+      (c.author === "Dad" ? icon("user") + " Dad" : icon("star") + " Kate") + '</span></p>';
     html += '<p>' + esc(c.text) + '</p>';
   });
   html += '</div>';
-  html += '<button class="btn btn-start" id="continue-story">Continue this story \u270D\uFE0F</button>';
+  html += '<button class="btn btn-start" id="continue-story">Continue this story</button>';
   return html;
 }
 
