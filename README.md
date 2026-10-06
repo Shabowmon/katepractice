@@ -3,8 +3,8 @@
 A practice timer + log for kids. Tap an activity, run the countdown, log the session.
 All data stays in `localStorage` on the device — nothing leaves the phone.
 
-- **Home:** grid of activity cards (Violin, Reading, Homework, Typing, Volleyball, Writing)
-- **Timer:** big countdown, Start/Pause/Reset, confetti celebration on completion
+- **Home:** grid of activity cards (Violin, Reading, Homework, Typing, Volleyball, Writing, Math, Cleanup)
+- **Timer:** big countdown, 10/20/30 minute options, Start/Pause/Reset, confetti celebration on completion
 - **Writing:** the timer plus Story Mode (see below)
 - **Story Mode:** shelf-first "continue the story" flow —
   - Shelf with two big doors: ✨ **New story** (pick 1 of 3 cliffhanger starters, 12 total)

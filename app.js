@@ -9,6 +9,8 @@ const ICONS = {
   keyboard:   '<rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/>',
   volleyball: '<circle cx="12" cy="12" r="9"/><path d="M12 12c0-4-2.5-6.5-6-7M12 12c3.5 2 7 1.5 8.7-1M12 12c-3.5 2-4.5 5.5-3 8.5"/>',
   feather:    '<path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"/><path d="M16 8 2 22M17.5 15H9"/>',
+  math:       '<path d="M5 7.5h5M7.5 5v5M14 7.5h5M5.7 14.7l3.6 3.6M9.3 14.7l-3.6 3.6M14 15h5M14 18h5"/>',
+  broom:      '<path d="M20 3l-7.5 7.5"/><path d="M10.5 8.5l5 5-2.5 6.5c-4.5 0-8-3-9-8z"/><path d="M7.5 13.5l3 3"/>',
   home:       '<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/>',
   today:      '<circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/>',
   flame:      '<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>',
@@ -32,10 +34,16 @@ const ACTIVITIES = [
   { id: "violin",     name: "Violin",     icon: "violin", minutes: 20 },
   { id: "reading",    name: "Reading",    icon: "book", minutes: 20 },
   { id: "homework",   name: "Homework",   icon: "pencil", minutes: 30 },
-  { id: "typing",     name: "Typing",     icon: "keyboard", minutes: 15 },
+  { id: "typing",     name: "Typing",     icon: "keyboard", minutes: 10 },
   { id: "volleyball", name: "Volleyball", icon: "volleyball", minutes: 30 },
-  { id: "writing",    name: "Writing",    icon: "feather", minutes: 15 },
+  { id: "writing",    name: "Writing",    icon: "feather", minutes: 10 },
+  { id: "math",       name: "Math",       icon: "math", minutes: 10 },
+  { id: "cleanup",    name: "Cleanup",    icon: "broom", minutes: 10 },
 ];
+
+// The timer lengths offered on every activity. "minutes" above is just
+// which one starts out selected.
+const DURATIONS = [10, 20, 30];
 
 const LS_KEY = "practiceHub.log.v1";
 
@@ -142,7 +150,13 @@ function renderTimer() {
   let html = '<div class="timer-wrap">' +
     '<button class="timer-back" id="timer-back">\u2190 All activities</button>' +
     '<div class="timer-emoji">' + icon(a.icon) + '</div>' +
-    '<div class="timer-name">' + esc(a.name) + ' \u00B7 ' + a.minutes + ' min</div>' +
+    '<div class="timer-name">' + esc(a.name) + '</div>' +
+    '<div class="time-options" role="radiogroup" aria-label="Timer length">';
+  DURATIONS.forEach(function (m) {
+    html += '<label class="time-option"><input type="radio" name="minutes" value="' + m + '"' +
+      (t.totalSec === m * 60 ? " checked" : "") + '><span>' + m + ' min</span></label>';
+  });
+  html += '</div>' +
     '<div class="timer-display" id="timer-display">' + fmt(t.remainingSec) + '</div>' +
     '<div class="timer-btns">' +
       '<button class="btn ' + (t.running ? "btn-pause" : "btn-start") + '" id="timer-toggle">' +
@@ -162,6 +176,9 @@ function renderTimer() {
   document.getElementById("timer-toggle").addEventListener("click", toggleTimer);
   document.getElementById("timer-reset").addEventListener("click", resetTimer);
   document.getElementById("timer-done").addEventListener("click", finishEarly);
+  viewEl.querySelectorAll('input[name="minutes"]').forEach(function (r) {
+    r.addEventListener("change", function () { setMinutes(+r.value); });
+  });
 
   if (a.id === "writing") {
     renderStoriesMode();
@@ -212,6 +229,16 @@ function resetTimer() {
   updateDisplay();
 }
 
+// Picking a different length starts the countdown over at that length
+function setMinutes(minutes) {
+  const t = timerState;
+  if (!t) return;
+  pauseTimer();
+  t.totalSec = minutes * 60;
+  t.remainingSec = t.totalSec;
+  updateDisplay();
+}
+
 function currentWords() {
   const ta = document.getElementById("chapter-text");
   if (!ta) return null;
@@ -238,7 +265,7 @@ function completeTimer() {
   if (!t) return;
   pauseTimer();
   t.remainingSec = 0;
-  logCompletion(t.activity.minutes);
+  logCompletion(Math.round(t.totalSec / 60));
   celebrate(t.activity);
 }
 
