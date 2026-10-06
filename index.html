@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Practice Hub</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <a class="back" href="https://robertnaanos.com" aria-label="Back to robertnaanos.com">&laquo;</a>
+  <h1>Practice Hub</h1>
+</header>
+
+<main id="view"></main>
+
+<nav class="tabbar">
+  <button class="tab active" data-view="home"><span class="tab-emoji">&#x1F3E0;</span><span class="tab-label">Home</span></button>
+  <button class="tab" data-view="today"><span class="tab-emoji">&#x2705;</span><span class="tab-label">Today</span></button>
+  <button class="tab" data-view="streak"><span class="tab-emoji">&#x1F525;</span><span class="tab-label">Streak</span></button>
+  <button class="tab" data-view="history"><span class="tab-emoji">&#x1F553;</span><span class="tab-label">History</span></button>
+</nav>
+
+<div id="overlay-root"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
