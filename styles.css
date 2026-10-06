@@ -96,7 +96,7 @@ body {
 
 .card:active { transform: scale(0.96); }
 
-.card-emoji { font-size: 2.6rem; }
+.card-emoji { font-size: 2rem; }
 .card-name { font-size: 1.15rem; font-weight: 700; }
 .card-mins { font-size: 0.95rem; color: var(--muted); }
 
@@ -109,18 +109,21 @@ body {
   text-align: center;
 }
 
+/* "← All activities" / "← All stories": same quiet link as .back.
+   The padding makes the tap target taller than the text. */
 .timer-back {
-  display: inline-block;
-  margin-bottom: 10px;
-  background: transparent;
+  display: block;
+  margin-bottom: 6px;
+  padding: 6px 12px 10px 0;
+  background: none;
+  border: none;
   color: var(--muted);
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  padding: 10px 22px;
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-family: inherit;
   cursor: pointer;
 }
+
+.timer-back:hover { color: var(--text); }
 
 .timer-emoji { font-size: 3rem; }
 .timer-name { font-size: 1.3rem; font-weight: 700; margin: 6px 0 2px; }
