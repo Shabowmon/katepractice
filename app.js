@@ -18,7 +18,6 @@ const ICONS = {
   shuffle:    '<path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/>',
   sparkle:    '<path d="M12 3l2.2 6.8L21 12l-6.8 2.2L12 21l-2.2-6.8L3 12l6.8-2.2z"/>',
   star:       '<path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9z"/>',
-  user:       '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
 };
 
 function icon(name) {
@@ -36,37 +35,6 @@ const ACTIVITIES = [
   { id: "typing",     name: "Typing",     icon: "keyboard", minutes: 15 },
   { id: "volleyball", name: "Volleyball", icon: "volleyball", minutes: 30 },
   { id: "writing",    name: "Writing",    icon: "feather", minutes: 15 },
-];
-
-const PROMPTS = [
-  "You wake up and your dog is wearing your clothes. What happens next?",
-  "Finish the story: a mysterious box arrives at your door with your name on it. You open it and\u2026",
-  "You find a hand-drawn map tucked inside a library book \u2014 and it leads somewhere in your own neighborhood\u2026",
-  "Write about a day where everything goes hilariously wrong, starting with breakfast.",
-  "Your backpack starts talking to you on the way to school. What does it say?",
-  "Finish the story: the volleyball floated into the air and never came down\u2026",
-  "You shrink to the size of an ant during recess. Describe your adventure.",
-  "Invent a brand-new holiday. What is it called, and how does everyone celebrate it?",
-  "A dragon moves in next door. Write about your very first conversation.",
-  "Finish the story: I opened my violin case and instead of my violin I found\u2026",
-  "You can trade places with any animal for one day. Which animal do you pick, and what do you do?",
-  "Write a letter from the point of view of your left shoe.",
-  "Your teacher announces that homework is now illegal. What happens at school the next day?",
-  "Finish the story: the last slice of pizza started glowing\u2026",
-  "You discover a secret room behind your bookshelf. What is inside?",
-  "Write about the world's worst babysitter \u2014 and you're the kid.",
-  "A time machine appears in your backyard, but it only goes back 10 minutes. What do you do with it?",
-  "Finish the story: my cat knocked over the lamp, and out came\u2026",
-  "You are the captain of a pirate ship made entirely of pillows. Where do you sail?",
-  "Write instructions for an alien on how to make a peanut butter sandwich.",
-  "Your reflection in the mirror winks at you \u2014 but you didn't wink. What happens next?",
-  "Finish the story: the school bus took a wrong turn and ended up\u2026",
-  "Invent a sport that combines two sports you know. Explain the rules.",
-  "You find a phone that can call anyone in history. Who do you call first, and what do you ask?",
-  "Write about a talent show where your act goes completely off the rails \u2014 in a funny way.",
-  "Finish the story: I was practicing violin when the strings started playing by themselves\u2026",
-  "Your houseplants have been holding secret meetings at night. Tonight you're invited. What happens?",
-  "Describe the perfect Saturday, from the moment you wake up to bedtime."
 ];
 
 const LS_KEY = "practiceHub.log.v1";
@@ -99,7 +67,7 @@ function activityById(id) {
 const viewEl = document.getElementById("view");
 const overlayRoot = document.getElementById("overlay-root");
 let currentView = "home";
-let timerState = null; // {activity, totalSec, remainingSec, endAt, running, intervalId, lastPromptIdx}
+let timerState = null; // {activity, totalSec, remainingSec, endAt, running, intervalId}
 
 document.querySelectorAll(".tab").forEach(function (btn) {
   btn.addEventListener("click", function () { showView(btn.dataset.view); });
@@ -150,11 +118,8 @@ function openTimer(activityId) {
     endAt: null,
     running: false,
     intervalId: null,
-    writingMode: "prompts",
     storyView: null,
     activeStoryId: null,
-    author: "Kate",
-    lastPromptIdx: -1,
   };
   currentView = "timer";
   document.querySelectorAll(".tab").forEach(function (b) { b.classList.remove("active"); });
@@ -188,15 +153,7 @@ function renderTimer() {
 
   if (a.id === "writing") {
     html += '<div class="writing-panel"><h3>' + icon("feather") + ' Writing</h3>' +
-      '<div class="mode-tabs">' +
-      '<button class="mode-tab active" id="mode-prompts">' + icon("dice") + ' Prompts</button>' +
-      '<button class="mode-tab" id="mode-stories">' + icon("book") + ' Stories</button></div>' +
-      '<div id="prompts-mode">' +
-      '<div class="prompt-box" id="prompt-box">Tap \u201CNew prompt\u201D for a story idea!</div>' +
-      '<button class="prompt-btn" id="prompt-btn">' + icon("dice") + ' New prompt</button>' +
-      '<textarea id="story" placeholder="Write your story here\u2026"></textarea>' +
-      '<div class="word-count"><span id="word-count">0</span> words</div></div>' +
-      '<div id="stories-mode" class="hidden"></div></div>';
+      '<div id="stories-mode"></div></div>';
   }
   html += "</div>";
   viewEl.innerHTML = html;
@@ -207,10 +164,6 @@ function renderTimer() {
   document.getElementById("timer-done").addEventListener("click", finishEarly);
 
   if (a.id === "writing") {
-    document.getElementById("prompt-btn").addEventListener("click", newPrompt);
-    document.getElementById("story").addEventListener("input", updateWordCount);
-    document.getElementById("mode-prompts").addEventListener("click", function () { setWritingMode("prompts"); });
-    document.getElementById("mode-stories").addEventListener("click", function () { setWritingMode("stories"); });
     renderStoriesMode();
   }
 }
@@ -260,28 +213,10 @@ function resetTimer() {
 }
 
 function currentWords() {
-  const t = timerState;
-  let ta = null;
-  if (t && t.writingMode === "stories") ta = document.getElementById("chapter-text");
-  else ta = document.getElementById("story");
+  const ta = document.getElementById("chapter-text");
   if (!ta) return null;
   const v = ta.value.trim();
   return v === "" ? 0 : v.split(/\s+/).filter(Boolean).length;
-}
-
-function updateWordCount() {
-  const el = document.getElementById("word-count");
-  if (el) el.textContent = currentWords();
-}
-
-function newPrompt() {
-  const t = timerState;
-  if (!t) return;
-  let idx;
-  do { idx = Math.floor(Math.random() * PROMPTS.length); }
-  while (idx === t.lastPromptIdx && PROMPTS.length > 1);
-  t.lastPromptIdx = idx;
-  document.getElementById("prompt-box").textContent = PROMPTS[idx];
 }
 
 function logCompletion(minutes) {
@@ -484,20 +419,6 @@ function saveDraft(id, v) { try { localStorage.setItem(draftKey(id), v); } catch
 function loadDraft(id) { try { return localStorage.getItem(draftKey(id)) || ""; } catch (e) { return ""; } }
 function clearDraft(id) { try { localStorage.removeItem(draftKey(id)); } catch (e) {} }
 
-/* ----- mode tabs ----- */
-
-function setWritingMode(mode) {
-  const t = timerState;
-  if (!t) return;
-  t.writingMode = mode;
-  document.getElementById("mode-prompts").classList.toggle("active", mode === "prompts");
-  document.getElementById("mode-stories").classList.toggle("active", mode === "stories");
-  document.getElementById("prompts-mode").classList.toggle("hidden", mode !== "prompts");
-  document.getElementById("stories-mode").classList.toggle("hidden", mode !== "stories");
-  if (mode === "stories" && !t.storyView) t.storyView = "shelf";
-  if (mode === "stories") renderStoriesMode();
-}
-
 function renderStoriesMode() {
   const t = timerState;
   const box = document.getElementById("stories-mode");
@@ -506,7 +427,6 @@ function renderStoriesMode() {
 
   let html = "";
   if (t.storyView === "pick") html = starterPickHtml();
-  else if (t.storyView === "dadstart") html = dadStartHtml();
   else if (t.storyView === "write") {
     const s = storyById(t.activeStoryId);
     if (s) html = storyWriteHtml(s);
@@ -537,8 +457,6 @@ function storiesShelfHtml() {
       '<span class="choice-sub">' + esc(storyTitle(last)) + '</span></button>';
   }
   html += '</div>';
-
-  html += '<button class="prompt-btn dad-btn" id="dad-story-btn">' + icon("user") + ' Dad starts one</button>';
 
   const rest = loadStories().slice().sort(function (a, b) { return b.updatedAt - a.updatedAt; });
   const older = last ? rest.filter(function (s) { return s.id !== last.id; }) : rest;
@@ -579,34 +497,17 @@ function starterPickHtml() {
   return html;
 }
 
-/* ----- dad starts ----- */
-
-function dadStartHtml() {
-  return '<button class="timer-back" id="story-back">\u2190 All stories</button>' +
-    '<h3 class="pick-title">' + icon("user") + ' Dad writes the opening</h3>' +
-    '<p class="dad-hint">Write 2\u20133 sentences to kick off the story. Kate writes Chapter 1 next.</p>' +
-    '<textarea id="dad-opening" placeholder="It started on an ordinary Tuesday\u2026"></textarea>' +
-    '<button class="btn btn-start" id="dad-start-go">Start the story</button>';
-}
-
 /* ----- write a chapter ----- */
 
 function storyWriteHtml(story) {
-  const t = timerState || { author: "Kate" };
   let html = '<button class="timer-back" id="story-back">\u2190 All stories</button>';
   html += '<div class="story-start"><div class="story-start-label">The story so far</div><p>' +
     esc(story.starter) + '</p></div>';
 
   story.chapters.forEach(function (c, i) {
-    const who = c.author === "Dad" ? icon("user") + " Dad" : icon("star") + " Kate";
-    html += '<div class="chapter"><span class="chapter-author ' +
-      (c.author === "Dad" ? "dad" : "kate") + '">' + who + ' \u00B7 Ch. ' + (i + 1) +
+    html += '<div class="chapter"><span class="chapter-num">Ch. ' + (i + 1) +
       '</span><p>' + esc(c.text) + '</p></div>';
   });
-
-  html += '<div class="author-toggle"><span>Writing as:</span>' +
-    '<button class="author-btn' + (t.author !== "Dad" ? " active" : "") + '" data-author="Kate">' + icon("star") + ' Kate</button>' +
-    '<button class="author-btn' + (t.author === "Dad" ? " active" : "") + '" data-author="Dad">' + icon("user") + ' Dad</button></div>';
 
   const draft = loadDraft(story.id);
   html += '<textarea id="chapter-text" placeholder="What happens next? Write Chapter ' +
@@ -624,9 +525,7 @@ function storyReadHtml(story) {
   html += '<div class="read-story"><h3>' + esc(storyTitle(story)) + '</h3>';
   html += '<p class="read-starter">' + esc(story.starter) + '</p>';
   story.chapters.forEach(function (c, i) {
-    html += '<p class="read-chapter-head"><strong>Chapter ' + (i + 1) + '</strong> ' +
-      '<span class="chapter-author ' + (c.author === "Dad" ? "dad" : "kate") + '">' +
-      (c.author === "Dad" ? icon("user") + " Dad" : icon("star") + " Kate") + '</span></p>';
+    html += '<p class="read-chapter-head"><strong>Chapter ' + (i + 1) + '</strong></p>';
     html += '<p>' + esc(c.text) + '</p>';
   });
   html += '</div>';
@@ -650,13 +549,9 @@ function wireStoriesMode() {
     const last = newestStory();
     if (!last) return;
     t.activeStoryId = last.id;
-    t.author = "Kate";
     t.storyView = "write";
     renderStoriesMode();
   });
-
-  const dadBtn = document.getElementById("dad-story-btn");
-  if (dadBtn) dadBtn.addEventListener("click", function () { t.storyView = "dadstart"; renderStoriesMode(); });
 
   box.querySelectorAll(".shelf-row").forEach(function (row) {
     row.addEventListener("click", function () {
@@ -690,39 +585,8 @@ function wireStoriesMode() {
       all.push(story);
       saveStories(all);
       t.activeStoryId = story.id;
-      t.author = "Kate";
       t.storyView = "write";
       renderStoriesMode();
-    });
-  });
-
-  const dadGo = document.getElementById("dad-start-go");
-  if (dadGo) dadGo.addEventListener("click", function () {
-    const v = document.getElementById("dad-opening").value.trim();
-    if (!v) return;
-    const story = {
-      id: "st" + Date.now(),
-      starter: v,
-      chapters: [],
-      dadStarted: true,
-      createdAt: Date.now(),
-      updatedAt: Date.now()
-    };
-    const all = loadStories();
-    all.push(story);
-    saveStories(all);
-    t.activeStoryId = story.id;
-    t.author = "Kate";
-    t.storyView = "write";
-    renderStoriesMode();
-  });
-
-  box.querySelectorAll(".author-btn").forEach(function (b) {
-    b.addEventListener("click", function () {
-      t.author = b.dataset.author;
-      box.querySelectorAll(".author-btn").forEach(function (x) {
-        x.classList.toggle("active", x === b);
-      });
     });
   });
 
@@ -740,7 +604,6 @@ function wireStoriesMode() {
 
   const cont2 = document.getElementById("continue-story");
   if (cont2) cont2.addEventListener("click", function () {
-    t.author = "Kate";
     t.storyView = "write";
     renderStoriesMode();
   });
@@ -764,7 +627,7 @@ function saveChapter() {
   if (!text) return;
   const s = storyById(t.activeStoryId);
   if (!s) return;
-  s.chapters.push({ author: t.author || "Kate", text: text, date: localDay(), ts: Date.now() });
+  s.chapters.push({ text: text, date: localDay(), ts: Date.now() });
   s.updatedAt = Date.now();
   updateStory(s);
   clearDraft(s.id);

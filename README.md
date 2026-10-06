@@ -5,13 +5,11 @@ All data stays in `localStorage` on the device — nothing leaves the phone.
 
 - **Home:** grid of activity cards (Violin, Reading, Homework, Typing, Volleyball, Writing)
 - **Timer:** big countdown, Start/Pause/Reset, confetti celebration on completion
-- **Writing:** two modes — 🎲 Prompts (28 story prompts + textarea with live word count)
-  and 📚 Stories (Story Mode, see below)
+- **Writing:** the timer plus Story Mode (see below)
 - **Story Mode:** shelf-first "continue the story" flow —
   - Shelf with two big doors: ✨ **New story** (pick 1 of 3 cliffhanger starters, 12 total)
     or 📖 **Continue yesterday's story** (jumps straight back into the latest story)
-  - 👨 **Dad starts one**: Robert writes the opening lines, Kate writes Chapter 1 next
-  - Chapter writing with Kate/Dad author toggle, 100-word goal bar, autosaved drafts
+  - Chapter writing with a 100-word goal bar, autosaved drafts
   - Read-back view stitches starter + chapters into one clean story
   - Stories persist in localStorage; chapters accumulate across days
 - **Today:** checklist of what's done vs todo

@@ -16,9 +16,6 @@
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-/* app.js toggles this to switch between Prompts and Stories */
-.hidden { display: none !important; }
-
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -172,17 +169,6 @@ body {
 
 .writing-panel h3 { margin: 0 0 10px; font-size: 1.1rem; }
 
-.prompt-box {
-  background: var(--surface);
-  border-radius: 14px;
-  padding: 14px;
-  font-size: 1.02rem;
-  line-height: 1.45;
-  min-height: 76px;
-  margin-bottom: 10px;
-  border: 1px dashed var(--amber);
-}
-
 .prompt-btn {
   background: var(--amber);
   color: var(--bg);
@@ -197,19 +183,6 @@ body {
 }
 
 .prompt-btn:active { transform: scale(0.95); }
-
-#story {
-  width: 100%;
-  min-height: 130px;
-  border-radius: 14px;
-  border: 1px solid var(--border);
-  padding: 12px;
-  font-size: 1.02rem;
-  font-family: inherit;
-  resize: vertical;
-  background: var(--surface);
-  color: var(--text);
-}
 
 .word-count {
   text-align: right;
@@ -359,14 +332,6 @@ body {
 }
 
 /* ---------- story mode ---------- */
-.mode-tabs { display: flex; gap: 8px; margin-bottom: 12px; }
-.mode-tab {
-  flex: 1; border: 1px solid var(--border); background: var(--surface); color: var(--muted);
-  border-radius: 999px; padding: 10px; font-size: 1rem; font-weight: 700;
-  font-family: inherit; cursor: pointer;
-}
-.mode-tab.active { background: var(--amber); border-color: var(--amber); color: var(--bg); }
-
 .story-choices { display: flex; gap: 10px; margin-bottom: 12px; }
 .story-choice {
   flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 18px;
@@ -378,8 +343,6 @@ body {
 .choice-emoji { font-size: 2rem; }
 .choice-label { font-weight: 700; font-size: 1rem; }
 .choice-sub { font-size: 0.8rem; color: var(--muted); }
-
-.dad-btn { background: transparent; color: var(--text); box-shadow: inset 0 0 0 1px var(--border); width: 100%; margin-bottom: 4px; }
 
 .shelf-row {
   display: flex; align-items: center; gap: 12px; width: 100%;
@@ -418,28 +381,17 @@ body {
   border: 1px solid var(--border);
 }
 .chapter p { margin: 6px 0 0; font-size: 1rem; line-height: 1.5; white-space: pre-wrap; }
-.chapter-author {
+.chapter-num {
   display: inline-block; font-size: 0.8rem; font-weight: 700;
   padding: 3px 10px; border-radius: 999px;
+  background: var(--amber-tint); color: var(--amber);
 }
-.chapter-author.kate { background: var(--amber-tint); color: var(--amber); }
-.chapter-author.dad { background: var(--green-tint); color: var(--green); }
 
-.author-toggle { display: flex; align-items: center; gap: 8px; margin: 14px 0 10px; flex-wrap: wrap; }
-.author-toggle span { color: var(--muted); font-size: 0.95rem; }
-.author-btn {
-  border: 1px solid var(--border); background: var(--surface); border-radius: 999px;
-  padding: 8px 16px; font-size: 0.95rem; font-weight: 700; font-family: inherit;
-  color: var(--muted); cursor: pointer;
-}
-.author-btn.active { border-color: var(--amber); background: var(--amber-tint); color: var(--text); }
-
-#chapter-text, #dad-opening {
+#chapter-text {
   width: 100%; min-height: 150px; border-radius: 14px; border: 1px solid var(--border);
   padding: 12px; font-size: 1.02rem; font-family: inherit; resize: vertical;
   background: var(--surface); color: var(--text); margin-top: 4px;
 }
-.dad-hint { color: var(--muted); font-size: 0.95rem; margin: 0 0 8px; }
 
 .goal-bar { height: 10px; background: var(--border); border-radius: 999px; margin: 10px 0 4px; overflow: hidden; }
 .goal-fill {
@@ -453,7 +405,7 @@ body {
 .read-starter { font-style: italic; color: var(--muted); border-left: 4px solid var(--amber); padding-left: 12px; }
 .read-chapter-head { margin-bottom: 2px !important; }
 
-#save-chapter, #continue-story, #dad-start-go { width: 100%; margin-top: 12px; }
+#save-chapter, #continue-story { width: 100%; margin-top: 12px; }
 
 /* ---------- tab bar ---------- */
 .tabbar {
